@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>手串定制 · 自己串一条</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <h1>手串定制</h1>
+    <p class="subtitle">选珠子，拼一条属于自己的手串</p>
+  </header>
+
+  <main class="app-main">
+    <section class="stage-panel">
+      <div class="stage-wrap">
+        <canvas id="ringCanvas"></canvas>
+      </div>
+      <div id="ringInfo" class="ring-info">还没有串上珠子</div>
+    </section>
+
+    <aside class="quick-actions hidden" id="quickActions">
+      <div class="quick-actions-label" id="quickActionsLabel"></div>
+      <div id="sizeButtons" class="size-buttons">
+        <button data-size="6">6mm</button>
+        <button data-size="8">8mm</button>
+        <button data-size="10">10mm</button>
+        <button data-size="12">12mm</button>
+      </div>
+      <button id="deleteSelectedBtn" class="danger-btn">删除这颗</button>
+    </aside>
+
+    <section class="palette-panel">
+      <div class="palette-select-wrap">
+        <select id="paletteSelect" class="palette-select"></select>
+      </div>
+      <div id="paletteGrid" class="palette-grid"></div>
+    </section>
+  </main>
+
+  <footer class="app-toolbar hidden" id="appToolbar">
+    <button id="clearBtn" class="ghost-btn">清空重来</button>
+    <button id="exportBtn" class="primary-btn">保存图片</button>
+  </footer>
+</div>
+
+<canvas id="dragGhost" class="drag-ghost" width="64" height="64"></canvas>
+
+<script src="js/beads-data.js"></script>
+<script src="js/bead-render.js"></script>
+<script src="js/ring-canvas.js"></script>
+<script src="js/export.js"></script>
+</body>
+</html>
