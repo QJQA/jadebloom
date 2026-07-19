@@ -133,10 +133,12 @@ function render() {
     ctx.arc(cx, cy, availableRadiusPx * 0.7, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
+    const hintFontSize = Math.max(11, Math.min(15, Math.min(w, h) * 0.034));
     ctx.fillStyle = 'rgba(90,85,85,0.55)';
-    ctx.font = '13px -apple-system, sans-serif';
+    ctx.font = `${hintFontSize}px -apple-system, sans-serif`;
     ctx.textAlign = 'center';
-    ctx.fillText('从下方选择珠子，点一下即可加入', cx, cy);
+    ctx.fillText('从下方选择珠子', cx, cy - hintFontSize * 0.7);
+    ctx.fillText('点一下即可加入', cx, cy + hintFontSize * 0.7);
     updateInfoText();
     updateQuickActions();
     updateToolbarVisibility();
