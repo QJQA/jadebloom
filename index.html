@@ -2,56 +2,142 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>手串定制 · 自己串一条</title>
-<link rel="stylesheet" href="style.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#F4F0E9" />
+<meta name="description" content="JADÉ BLOOM 在线水晶手串设计工坊，挑选晶石、调整珠径，设计属于自己的手串。" />
+<title>JADÉ BLOOM · 水晶手串设计工坊</title>
+<link rel="stylesheet" href="style.css?v=2.1.1" />
 </head>
 <body>
 <div class="app">
   <header class="app-header">
-    <div class="brand">JADÉ BLOOM</div>
-    <h1>手串定制</h1>
-    <p class="subtitle">选珠子，拼一条属于自己的手串</p>
+    <a class="brand-lockup" href="#designer" aria-label="JADÉ BLOOM 首页">
+      <span class="brand-copy">
+        <strong>JADÉ BLOOM</strong>
+        <small>CRYSTAL ATELIER</small>
+      </span>
+    </a>
+    <div class="header-intro">
+      <p class="eyebrow">PERSONAL CRYSTAL OBJECT</p>
+      <h1>设计一串，与你相合的晶石</h1>
+    </div>
+    <div class="save-state" id="saveState" aria-live="polite">
+      <span class="save-state-dot"></span>设计会自动保存在本机
+    </div>
   </header>
 
-  <main class="app-main">
-    <section class="stage-panel">
-      <div class="stage-wrap">
-        <canvas id="ringCanvas"></canvas>
+  <main class="app-main" id="designer">
+    <section class="studio-panel" aria-labelledby="studioTitle">
+      <div class="studio-heading">
+        <div>
+          <p class="section-index">01 / DESIGN CANVAS</p>
+          <h2 id="studioTitle">我的晶石手串</h2>
+        </div>
+        <p class="studio-note">搭配示意 · 画布自动适配</p>
       </div>
-      <div id="ringInfo" class="ring-info">还没有串上珠子</div>
+
+      <div class="stage-card">
+        <div class="stage-wrap">
+          <canvas id="ringCanvas" role="img" tabindex="0" aria-label="手串设计画布。可选择珠子并拖动调整顺序。"></canvas>
+          <div class="canvas-corner canvas-corner-top">JADÉ BLOOM</div>
+          <div class="canvas-corner canvas-corner-bottom">HANDCRAFTED COMPOSITION</div>
+        </div>
+
+        <div class="ring-readout">
+          <div>
+            <span class="readout-label">当前设计</span>
+            <div id="ringInfo" class="ring-info" aria-live="polite">还没有串上珠子</div>
+          </div>
+          <p class="fit-disclaimer">搭配图仅供设计参考，实际颗数与尺寸请在线下试戴后确认。</p>
+        </div>
+
+        <div class="composition-bar" id="compositionBar">
+          <span class="composition-empty">从右侧晶石库轻触添加，拖入画布可指定位置</span>
+        </div>
+
+        <div class="app-toolbar" id="appToolbar">
+          <div class="history-actions" aria-label="编辑历史">
+            <button id="undoBtn" class="icon-btn" type="button" disabled aria-label="撤销" title="撤销">↶</button>
+            <button id="redoBtn" class="icon-btn" type="button" disabled aria-label="重做" title="重做">↷</button>
+          </div>
+          <button id="clearBtn" class="ghost-btn" type="button" disabled>清空设计</button>
+          <button id="exportBtn" class="primary-btn" type="button" disabled>
+            <span>保存设计卡</span><span aria-hidden="true">↗</span>
+          </button>
+        </div>
+      </div>
     </section>
 
-    <aside class="quick-actions hidden" id="quickActions">
-      <div class="quick-actions-label" id="quickActionsLabel"></div>
-      <div id="sizeButtons" class="size-buttons">
-        <button data-size="6">6mm</button>
-        <button data-size="8">8mm</button>
-        <button data-size="10">10mm</button>
-        <button data-size="12">12mm</button>
+    <aside class="workbench" aria-labelledby="libraryTitle">
+      <div class="workbench-scroll">
+        <section class="workbench-section inspiration-section">
+          <div class="section-title-row inspiration-heading">
+            <div>
+              <p class="section-index">02 / STARTING POINT</p>
+              <h2>灵感配方</h2>
+            </div>
+            <small>一键开始，仍可自由调整</small>
+          </div>
+          <div class="preset-grid" id="presetGrid">
+            <button type="button" data-preset="blank"><i class="preset-orb blank"></i><span>自由设计</span></button>
+            <button type="button" data-preset="rose"><i class="preset-orb rose"></i><span>柔光玫瑰</span></button>
+            <button type="button" data-preset="moon"><i class="preset-orb moon"></i><span>月色海岸</span></button>
+            <button type="button" data-preset="earth"><i class="preset-orb earth"></i><span>暮色大地</span></button>
+          </div>
+        </section>
+
+        <section class="quick-actions hidden" id="quickActions" aria-labelledby="quickActionsLabel">
+          <div class="selection-head">
+            <div>
+              <span>正在编辑</span>
+              <strong id="quickActionsLabel"></strong>
+            </div>
+            <button id="closeSelectionBtn" class="close-btn" type="button" aria-label="关闭单颗编辑">×</button>
+          </div>
+          <div class="selection-content">
+            <div>
+              <span class="selection-caption">珠径</span>
+              <div id="sizeButtons" class="segmented-control selection-sizes">
+                <button type="button" data-size="6">6mm</button>
+                <button type="button" data-size="8">8mm</button>
+                <button type="button" data-size="10">10mm</button>
+                <button type="button" data-size="12">12mm</button>
+              </div>
+            </div>
+            <button id="deleteSelectedBtn" class="danger-btn" type="button">删除这颗</button>
+          </div>
+        </section>
+
+        <section class="workbench-section palette-panel">
+          <div class="section-title-row library-heading">
+            <div>
+              <p class="section-index">03 / MATERIAL LIBRARY</p>
+              <h2 id="libraryTitle">晶石素材库</h2>
+            </div>
+            <label class="search-shell" aria-label="搜索晶石">
+              <span aria-hidden="true">⌕</span>
+              <input id="paletteSearch" type="search" placeholder="搜索" autocomplete="off" />
+            </label>
+          </div>
+          <div id="paletteTabs" class="palette-tabs" role="tablist" aria-label="晶石分类"></div>
+          <div id="paletteGrid" class="palette-grid"></div>
+          <p id="paletteEmpty" class="palette-empty hidden">没有找到匹配的晶石</p>
+        </section>
       </div>
-      <button id="deleteSelectedBtn" class="danger-btn">删除这颗</button>
     </aside>
-
-    <section class="palette-panel">
-      <div class="palette-select-wrap">
-        <select id="paletteSelect" class="palette-select"></select>
-      </div>
-      <div id="paletteGrid" class="palette-grid"></div>
-    </section>
   </main>
 
-  <footer class="app-toolbar hidden" id="appToolbar">
-    <button id="clearBtn" class="ghost-btn">清空重来</button>
-    <button id="exportBtn" class="primary-btn">保存图片</button>
-  </footer>
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <span id="toastMessage"></span>
+    <button id="toastAction" type="button" class="hidden">撤销</button>
+  </div>
 </div>
 
-<canvas id="dragGhost" class="drag-ghost" width="64" height="64"></canvas>
+<canvas id="dragGhost" class="drag-ghost" width="72" height="72" aria-hidden="true"></canvas>
 
-<script src="js/beads-data.js"></script>
-<script src="js/bead-render.js"></script>
-<script src="js/ring-canvas.js"></script>
-<script src="js/export.js"></script>
+<script src="js/beads-data.js?v=2.1.1"></script>
+<script src="js/bead-render.js?v=2.1.1"></script>
+<script src="js/ring-canvas.js?v=2.1.1"></script>
+<script src="js/export.js?v=2.1.1"></script>
 </body>
 </html>

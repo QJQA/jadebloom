@@ -1,6 +1,4 @@
-// 珠子渲染：用 Canvas 径向渐变模拟水晶球体质感
-// 后续若要换成真实照片抠图，只需替换 drawBead 内部实现，
-// 上层（palette / ring-canvas）调用方式不需要改动。
+// 水晶珠渲染：以稳定随机纹理、透光层与接触阴影模拟天然晶石
 
 function mulberry32(seed) {
   let a = seed;
@@ -14,9 +12,9 @@ function mulberry32(seed) {
 }
 
 function hexToRgb(hex) {
-  const v = hex.replace('#', '');
-  const n = parseInt(v, 16);
-  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  const value = hex.replace('#', '');
+  const number = parseInt(value, 16);
+  return { r: (number >> 16) & 255, g: (number >> 8) & 255, b: number & 255 };
 }
 
 function rgba(hex, alpha) {
@@ -24,104 +22,165 @@ function rgba(hex, alpha) {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+function drawSoftInclusions(ctx, cx, cy, r, beadType, rand) {
+  for (let i = 0; i < 5; i++) {
+    const angle = rand() * Math.PI * 2;
+    const distance = rand() * r * .58;
+    const radius = r * (.12 + rand() * .24);
+    const x = cx + Math.cos(angle) * distance;
+    const y = cy + Math.sin(angle) * distance;
+    const cloud = ctx.createRadialGradient(x, y, 0, x, y, radius);
+    cloud.addColorStop(0, rgba(i % 2 ? beadType.highlight : beadType.shadow, .11));
+    cloud.addColorStop(1, rgba(beadType.base, 0));
+    ctx.fillStyle = cloud;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
 /**
  * @param {CanvasRenderingContext2D} ctx
- * @param {number} cx 圆心 x
- * @param {number} cy 圆心 y
- * @param {number} r 珠子半径(px)
- * @param {object} beadType 来自 beads-data.js 的珠子类型
- * @param {number} seed 稳定随机种子（同一颗珠子多次重绘保持纹理一致）
+ * @param {number} cx
+ * @param {number} cy
+ * @param {number} r
+ * @param {object} beadType
+ * @param {number} seed
  */
 function drawBead(ctx, cx, cy, r, beadType, seed) {
+  if (!beadType || r <= 0) return;
   const rand = mulberry32(seed || 1);
+  const lightX = cx - r * .32;
+  const lightY = cy - r * .4;
+  const isMatte = beadType.texture === 'stone';
+
   ctx.save();
 
-  // 底层球体渐变：左上高光 -> 主色 -> 边缘阴影
-  const lightX = cx - r * 0.35;
-  const lightY = cy - r * 0.4;
-  const grad = ctx.createRadialGradient(lightX, lightY, r * 0.05, cx, cy, r * 1.05);
-  grad.addColorStop(0, beadType.highlight);
-  grad.addColorStop(0.45, beadType.base);
-  grad.addColorStop(1, beadType.shadow);
+  // 接触阴影让珠子落在画布上，而不是悬浮的 UI 圆点。
+  ctx.save();
+  ctx.filter = `blur(${Math.max(2, r * .16)}px)`;
+  ctx.fillStyle = 'rgba(45,31,26,.22)';
+  ctx.beginPath();
+  ctx.ellipse(cx + r * .13, cy + r * .48, r * .83, r * .42, -.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 
+  // 主体：高光中心略偏左上，边缘增加深色与半透明感。
+  const body = ctx.createRadialGradient(lightX, lightY, r * .03, cx + r * .08, cy + r * .08, r * 1.08);
+  body.addColorStop(0, rgba(beadType.highlight, isMatte ? .82 : .95));
+  body.addColorStop(.23, beadType.base);
+  body.addColorStop(.68, beadType.base);
+  body.addColorStop(1, beadType.shadow);
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.fillStyle = grad;
+  ctx.fillStyle = body;
   ctx.fill();
 
   ctx.save();
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r - .35, 0, Math.PI * 2);
   ctx.clip();
 
+  if (!isMatte) drawSoftInclusions(ctx, cx, cy, r, beadType, rand);
+
   if (beadType.texture === 'clear') {
-    // 通透玻璃质感：内部一道折射亮纹
-    ctx.strokeStyle = rgba(beadType.highlight, 0.5);
-    ctx.lineWidth = r * 0.12;
-    ctx.beginPath();
-    ctx.moveTo(cx - r * 0.5, cy + r * 0.3);
-    ctx.lineTo(cx + r * 0.1, cy - r * 0.55);
-    ctx.stroke();
-  } else if (beadType.texture === 'catseye') {
-    // 猫眼/月光效果：一道斜向明亮光带
-    const bandGrad = ctx.createLinearGradient(cx - r, cy - r * 0.6, cx + r, cy + r * 0.6);
-    bandGrad.addColorStop(0, rgba(beadType.highlight, 0));
-    bandGrad.addColorStop(0.5, rgba(beadType.highlight, 0.85));
-    bandGrad.addColorStop(1, rgba(beadType.highlight, 0));
-    ctx.fillStyle = bandGrad;
-    ctx.fillRect(cx - r, cy - r * 0.22, r * 2, r * 0.44);
-  } else if (beadType.texture === 'sparkle') {
-    // 闪砂内含物：随机小亮点
-    const count = 10;
-    for (let i = 0; i < count; i++) {
-      const a = rand() * Math.PI * 2;
-      const d = rand() * r * 0.85;
-      const px = cx + Math.cos(a) * d;
-      const py = cy + Math.sin(a) * d;
-      const s = r * (0.04 + rand() * 0.05);
-      ctx.fillStyle = rgba(beadType.highlight, 0.55 + rand() * 0.3);
+    // 通透晶体：不规则冰裂纹与底部透光。
+    ctx.strokeStyle = rgba(beadType.highlight, .32);
+    ctx.lineWidth = Math.max(.6, r * .035);
+    for (let i = 0; i < 3; i++) {
+      const startX = cx - r * (.62 - i * .2);
+      const startY = cy + r * (.45 - i * .24);
       ctx.beginPath();
-      ctx.arc(px, py, s, 0, Math.PI * 2);
+      ctx.moveTo(startX, startY);
+      ctx.quadraticCurveTo(cx + r * (rand() - .5) * .4, cy - r * .1, cx + r * (.2 + rand() * .42), cy - r * (.45 - i * .09));
+      ctx.stroke();
+    }
+    const transmission = ctx.createLinearGradient(cx, cy - r, cx, cy + r);
+    transmission.addColorStop(0, 'rgba(255,255,255,0)');
+    transmission.addColorStop(.72, rgba(beadType.highlight, .08));
+    transmission.addColorStop(1, rgba(beadType.highlight, .36));
+    ctx.fillStyle = transmission;
+    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  } else if (beadType.texture === 'catseye') {
+    // 猫眼/月光石：柔亮光带随每颗种子略有不同。
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-.34 + rand() * .18);
+    const band = ctx.createLinearGradient(-r, 0, r, 0);
+    band.addColorStop(0, rgba(beadType.highlight, 0));
+    band.addColorStop(.38, rgba(beadType.highlight, .1));
+    band.addColorStop(.5, rgba(beadType.highlight, .78));
+    band.addColorStop(.62, rgba(beadType.highlight, .1));
+    band.addColorStop(1, rgba(beadType.highlight, 0));
+    ctx.fillStyle = band;
+    ctx.fillRect(-r, -r, r * 2, r * 2);
+    ctx.restore();
+  } else if (beadType.texture === 'sparkle') {
+    // 砂金内含物：细小暖色片状反光。
+    for (let i = 0; i < 15; i++) {
+      const angle = rand() * Math.PI * 2;
+      const distance = Math.sqrt(rand()) * r * .78;
+      const px = cx + Math.cos(angle) * distance;
+      const py = cy + Math.sin(angle) * distance;
+      const size = r * (.025 + rand() * .055);
+      ctx.fillStyle = i % 3 === 0 ? 'rgba(255,235,174,.8)' : rgba(beadType.highlight, .42 + rand() * .38);
+      ctx.beginPath();
+      ctx.ellipse(px, py, size * 1.8, size, rand() * Math.PI, 0, Math.PI * 2);
       ctx.fill();
     }
   } else if (beadType.texture === 'banded') {
-    // 玛瑙纹带：几道同心弧线
-    ctx.strokeStyle = rgba(beadType.shadow, 0.35);
-    ctx.lineWidth = r * 0.06;
-    for (let i = 1; i <= 3; i++) {
+    // 玛瑙/红纹石：天然偏心纹带，不使用机械同心圆。
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 4; i++) {
+      ctx.strokeStyle = i % 2 ? rgba(beadType.highlight, .22) : rgba(beadType.shadow, .2);
+      ctx.lineWidth = r * (.045 + rand() * .035);
       ctx.beginPath();
-      ctx.arc(cx, cy, r * (i / 4), 0, Math.PI * 2);
+      ctx.arc(cx - r * .2, cy + r * .15, r * (.28 + i * .17), -.85, Math.PI * 1.45);
       ctx.stroke();
     }
   } else if (beadType.texture === 'stone') {
-    // 哑光石感：柔和噪点斑块，无强反光
-    const count = 6;
-    for (let i = 0; i < count; i++) {
-      const a = rand() * Math.PI * 2;
-      const d = rand() * r * 0.7;
-      const px = cx + Math.cos(a) * d;
-      const py = cy + Math.sin(a) * d;
-      const s = r * (0.1 + rand() * 0.15);
-      ctx.fillStyle = rgba(beadType.shadow, 0.12 + rand() * 0.1);
+    // 哑光矿石：颗粒斑块与克制高光。
+    for (let i = 0; i < 18; i++) {
+      const angle = rand() * Math.PI * 2;
+      const distance = Math.sqrt(rand()) * r * .78;
+      const px = cx + Math.cos(angle) * distance;
+      const py = cy + Math.sin(angle) * distance;
+      const size = r * (.035 + rand() * .11);
+      ctx.fillStyle = rand() > .45 ? rgba(beadType.shadow, .1 + rand() * .13) : rgba(beadType.highlight, .08 + rand() * .1);
       ctx.beginPath();
-      ctx.arc(px, py, s, 0, Math.PI * 2);
+      ctx.arc(px, py, size, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  ctx.restore(); // release clip
-
-  // 顶部小高光点，增加光泽感
+  // 玻璃罩式高光与底缘反射。
+  const gloss = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, r * .52);
+  gloss.addColorStop(0, `rgba(255,255,255,${isMatte ? .28 : .7})`);
+  gloss.addColorStop(.55, `rgba(255,255,255,${isMatte ? .07 : .16})`);
+  gloss.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gloss;
   ctx.beginPath();
-  ctx.fillStyle = rgba('#FFFFFF', beadType.texture === 'stone' ? 0.25 : 0.55);
-  ctx.arc(lightX, lightY, r * 0.18, 0, Math.PI * 2);
+  ctx.ellipse(lightX, lightY, r * .42, r * .27, -.55, 0, Math.PI * 2);
   ctx.fill();
 
-  // 穿孔线（顶部小凹槽，暗示线孔位置）
+  ctx.strokeStyle = `rgba(255,255,255,${isMatte ? .18 : .48})`;
+  ctx.lineWidth = Math.max(.8, r * .035);
   ctx.beginPath();
-  ctx.strokeStyle = rgba('#000000', 0.15);
-  ctx.lineWidth = Math.max(1, r * 0.06);
-  ctx.arc(cx, cy, r * 0.98, -Math.PI * 0.15, Math.PI * 0.15);
+  ctx.arc(cx, cy, r * .83, .22, 1.35);
+  ctx.stroke();
+  ctx.restore();
+
+  // 精细边缘与穿孔暗示。
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - .3, 0, Math.PI * 2);
+  ctx.strokeStyle = rgba(beadType.shadow, .36);
+  ctx.lineWidth = Math.max(.7, r * .028);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(25,20,18,.16)';
+  ctx.lineWidth = Math.max(.8, r * .045);
+  ctx.arc(cx, cy, r * .94, -.16 * Math.PI, .15 * Math.PI);
   ctx.stroke();
 
   ctx.restore();
@@ -129,20 +188,19 @@ function drawBead(ctx, cx, cy, r, beadType, seed) {
 
 function renderBeadSwatch(canvas, beadType) {
   const dpr = window.devicePixelRatio || 1;
-  const size = canvas.clientWidth || 56;
-  canvas.width = size * dpr;
-  canvas.height = size * dpr;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, size, size);
-  const r = size * 0.4;
-  drawBead(ctx, size / 2, size / 2, r, beadType, hashString(beadType.id));
+  const size = canvas.clientWidth || 48;
+  canvas.width = Math.round(size * dpr);
+  canvas.height = Math.round(size * dpr);
+  const swatchCtx = canvas.getContext('2d');
+  swatchCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  swatchCtx.clearRect(0, 0, size, size);
+  drawBead(swatchCtx, size / 2, size / 2 - 1, size * .35, beadType, hashString(beadType.id));
 }
 
 function hashString(str) {
-  let h = 0;
+  let hash = 0;
   for (let i = 0; i < str.length; i++) {
-    h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0;
   }
-  return h;
+  return hash;
 }
