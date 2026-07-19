@@ -32,6 +32,14 @@ html, body {
   padding: 30px 20px 14px;
   text-align: center;
 }
+.app-header .brand {
+  font-family: Georgia, "Songti SC", "STSong", serif;
+  font-weight: 500;
+  font-size: 15px;
+  letter-spacing: 5px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
 .app-header h1 {
   margin: 0;
   font-family: Georgia, "Songti SC", "STSong", serif;
@@ -277,6 +285,7 @@ html, body {
 @media (max-width: 768px) {
   .app-header { padding: 22px 16px 10px; }
   .app-header h1 { font-size: 21px; letter-spacing: 2px; }
+  .app-header .brand { font-size: 12px; letter-spacing: 3px; }
 
   .app-main {
     grid-template-columns: 1fr;
