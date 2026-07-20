@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F4F0E9" />
 <meta name="description" content="JADÉ BLOOM 在线水晶手串设计工坊，挑选晶石、调整珠径，设计属于自己的手串。" />
 <title>JADÉ BLOOM · 水晶手串设计工坊</title>
-<link rel="stylesheet" href="style.css?v=2.1.7" />
+<link rel="stylesheet" href="style.css?v=2.1.8" />
 </head>
 <body>
 <div class="app">
@@ -126,12 +126,18 @@
               <p class="section-index">03 / MATERIAL LIBRARY</p>
               <h2 id="libraryTitle">晶石素材库</h2>
             </div>
+            <label class="search-shell" aria-label="搜索晶石">
+              <span aria-hidden="true">⌕</span>
+              <input id="paletteSearch" type="search" placeholder="搜索" autocomplete="off" />
+            </label>
             <label class="category-select-shell">
               <select id="paletteCategorySelect" aria-label="选择晶石分类"></select>
               <span aria-hidden="true">⌄</span>
             </label>
           </div>
+          <div id="paletteTabs" class="palette-tabs" role="tablist" aria-label="晶石分类"></div>
           <div id="paletteGrid" class="palette-grid"></div>
+          <p id="paletteEmpty" class="palette-empty hidden">没有找到匹配的晶石</p>
         </section>
       </div>
     </aside>
@@ -145,9 +151,9 @@
 
 <canvas id="dragGhost" class="drag-ghost" width="72" height="72" aria-hidden="true"></canvas>
 
-<script src="js/beads-data.js?v=2.1.7"></script>
-<script src="js/bead-render.js?v=2.1.7"></script>
-<script src="js/ring-canvas.js?v=2.1.7"></script>
-<script src="js/export.js?v=2.1.7"></script>
+<script src="js/beads-data.js?v=2.1.8"></script>
+<script src="js/bead-render.js?v=2.1.8"></script>
+<script src="js/ring-canvas.js?v=2.1.8"></script>
+<script src="js/export.js?v=2.1.8"></script>
 </body>
 </html>

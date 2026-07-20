@@ -698,12 +698,13 @@ function attachPaletteSwatch(swatchEl, type) {
 
 // ---------- 晶石库 ----------
 
-function buildPalette(categorySelectEl, gridEl) {
+function buildPalette(tabsEl, gridEl, searchEl, emptyEl, categorySelectEl) {
   const categories = [
     ...BEAD_CATEGORIES,
     { id: 'all', name: '全部', beads: BEAD_CATEGORIES.flatMap((cat) => cat.beads) },
   ];
   let activeCategory = categories[0];
+  let query = '';
 
   categories.forEach((category) => {
     const option = document.createElement('option');
@@ -712,9 +713,36 @@ function buildPalette(categorySelectEl, gridEl) {
     categorySelectEl.appendChild(option);
   });
 
+  function renderTabs() {
+    tabsEl.innerHTML = '';
+    categories.forEach((category) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `palette-tab${category.id === activeCategory.id ? ' active' : ''}`;
+      button.textContent = category.name;
+      button.dataset.category = category.id;
+      button.setAttribute('role', 'tab');
+      button.setAttribute('aria-selected', String(category.id === activeCategory.id));
+      button.addEventListener('click', () => {
+        activeCategory = category;
+        categorySelectEl.value = category.id;
+        renderTabs();
+        renderGrid();
+      });
+      tabsEl.appendChild(button);
+    });
+  }
+
   function renderGrid() {
     gridEl.innerHTML = '';
-    activeCategory.beads.forEach((type) => {
+    const keyword = query.trim().toLowerCase();
+    const sourceBeads = keyword
+      ? BEAD_CATEGORIES.flatMap((category) => category.beads)
+      : activeCategory.beads;
+    const beads = sourceBeads.filter((type) => !keyword || type.name.toLowerCase().includes(keyword));
+    emptyEl.classList.toggle('hidden', beads.length > 0);
+
+    beads.forEach((type) => {
       const item = document.createElement('button');
       item.type = 'button';
       item.className = 'bead-swatch';
@@ -738,9 +766,16 @@ function buildPalette(categorySelectEl, gridEl) {
 
   categorySelectEl.addEventListener('change', () => {
     activeCategory = categories.find((category) => category.id === categorySelectEl.value) || categories[0];
+    renderTabs();
     renderGrid();
   });
 
+  searchEl.addEventListener('input', () => {
+    query = searchEl.value;
+    renderGrid();
+  });
+
+  renderTabs();
   renderGrid();
 
   return { refresh: renderGrid };
@@ -789,8 +824,11 @@ function initApp() {
   restorePersistedState();
 
   buildPalette(
-    document.getElementById('paletteCategorySelect'),
+    document.getElementById('paletteTabs'),
     document.getElementById('paletteGrid'),
+    document.getElementById('paletteSearch'),
+    document.getElementById('paletteEmpty'),
+    document.getElementById('paletteCategorySelect'),
   );
 
   sizeButtonsEl.querySelectorAll('button').forEach((button) => {
