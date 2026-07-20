@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F4F0E9" />
 <meta name="description" content="JADÉ BLOOM 在线水晶手串设计工坊，挑选晶石、调整珠径，设计属于自己的手串。" />
 <title>JADÉ BLOOM · 水晶手串设计工坊</title>
-<link rel="stylesheet" href="style.css?v=2.1.1" />
+<link rel="stylesheet" href="style.css?v=2.1.5" />
 </head>
 <body>
 <div class="app">
@@ -19,7 +19,7 @@
     </a>
     <div class="header-intro">
       <p class="eyebrow">PERSONAL CRYSTAL OBJECT</p>
-      <h1>设计一串，与你相合的晶石</h1>
+      <h1>设计一串与你相合的晶石</h1>
     </div>
     <div class="save-state" id="saveState" aria-live="polite">
       <span class="save-state-dot"></span>设计会自动保存在本机
@@ -33,7 +33,19 @@
           <p class="section-index">01 / DESIGN CANVAS</p>
           <h2 id="studioTitle">我的晶石手串</h2>
         </div>
-        <p class="studio-note">搭配示意 · 画布自动适配</p>
+        <div class="studio-heading-actions">
+          <p class="studio-note">搭配示意 · 画布自动适配</p>
+          <label class="mobile-preset-select">
+            <select id="mobilePresetSelect" aria-label="选择灵感配方">
+              <option value="">灵感配方</option>
+              <option value="blank">自由设计</option>
+              <option value="rose">柔光玫瑰</option>
+              <option value="moon">月色海岸</option>
+              <option value="earth">暮色大地</option>
+            </select>
+            <span aria-hidden="true">⌄</span>
+          </label>
+        </div>
       </div>
 
       <div class="stage-card">
@@ -114,14 +126,12 @@
               <p class="section-index">03 / MATERIAL LIBRARY</p>
               <h2 id="libraryTitle">晶石素材库</h2>
             </div>
-            <label class="search-shell" aria-label="搜索晶石">
-              <span aria-hidden="true">⌕</span>
-              <input id="paletteSearch" type="search" placeholder="搜索" autocomplete="off" />
+            <label class="category-select-shell">
+              <select id="paletteCategorySelect" aria-label="选择晶石分类"></select>
+              <span aria-hidden="true">⌄</span>
             </label>
           </div>
-          <div id="paletteTabs" class="palette-tabs" role="tablist" aria-label="晶石分类"></div>
           <div id="paletteGrid" class="palette-grid"></div>
-          <p id="paletteEmpty" class="palette-empty hidden">没有找到匹配的晶石</p>
         </section>
       </div>
     </aside>
@@ -135,9 +145,9 @@
 
 <canvas id="dragGhost" class="drag-ghost" width="72" height="72" aria-hidden="true"></canvas>
 
-<script src="js/beads-data.js?v=2.1.1"></script>
-<script src="js/bead-render.js?v=2.1.1"></script>
-<script src="js/ring-canvas.js?v=2.1.1"></script>
-<script src="js/export.js?v=2.1.1"></script>
+<script src="js/beads-data.js?v=2.1.5"></script>
+<script src="js/bead-render.js?v=2.1.5"></script>
+<script src="js/ring-canvas.js?v=2.1.5"></script>
+<script src="js/export.js?v=2.1.5"></script>
 </body>
 </html>

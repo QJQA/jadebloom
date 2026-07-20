@@ -282,14 +282,6 @@ function render() {
     return;
   }
 
-  ctx.save();
-  ctx.fillStyle = 'rgba(70,49,42,.065)';
-  ctx.filter = 'blur(13px)';
-  ctx.beginPath();
-  ctx.ellipse(cx + 8, cy + radiusPx * .45, radiusPx * 1.08, radiusPx * .52, 0, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-
   if (positions.length > 1) drawElastic(cx, cy, radiusPx);
 
   positions.forEach((p) => {
@@ -706,43 +698,23 @@ function attachPaletteSwatch(swatchEl, type) {
 
 // ---------- 晶石库 ----------
 
-function buildPalette(tabsEl, gridEl, searchEl, emptyEl) {
+function buildPalette(categorySelectEl, gridEl) {
   const categories = [
     ...BEAD_CATEGORIES,
     { id: 'all', name: '全部', beads: BEAD_CATEGORIES.flatMap((cat) => cat.beads) },
   ];
   let activeCategory = categories[0];
-  let query = '';
 
-  function renderTabs() {
-    tabsEl.innerHTML = '';
-    categories.forEach((category) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = `palette-tab${category.id === activeCategory.id ? ' active' : ''}`;
-      button.textContent = category.name;
-      button.dataset.category = category.id;
-      button.setAttribute('role', 'tab');
-      button.setAttribute('aria-selected', String(category.id === activeCategory.id));
-      button.addEventListener('click', () => {
-        activeCategory = category;
-        renderTabs();
-        renderGrid();
-      });
-      tabsEl.appendChild(button);
-    });
-  }
+  categories.forEach((category) => {
+    const option = document.createElement('option');
+    option.value = category.id;
+    option.textContent = category.name;
+    categorySelectEl.appendChild(option);
+  });
 
   function renderGrid() {
     gridEl.innerHTML = '';
-    const keyword = query.trim().toLowerCase();
-    const sourceBeads = keyword
-      ? BEAD_CATEGORIES.flatMap((category) => category.beads)
-      : activeCategory.beads;
-    const beads = sourceBeads.filter((type) => !keyword || type.name.toLowerCase().includes(keyword));
-    emptyEl.classList.toggle('hidden', beads.length > 0);
-
-    beads.forEach((type) => {
+    activeCategory.beads.forEach((type) => {
       const item = document.createElement('button');
       item.type = 'button';
       item.className = 'bead-swatch';
@@ -751,6 +723,7 @@ function buildPalette(tabsEl, gridEl, searchEl, emptyEl) {
 
       const beadCanvas = document.createElement('canvas');
       beadCanvas.setAttribute('aria-hidden', 'true');
+      beadCanvas.dataset.beadId = type.id;
       const name = document.createElement('strong');
       name.textContent = type.name;
       const texture = document.createElement('small');
@@ -763,15 +736,28 @@ function buildPalette(tabsEl, gridEl, searchEl, emptyEl) {
     });
   }
 
-  searchEl.addEventListener('input', () => {
-    query = searchEl.value;
+  categorySelectEl.addEventListener('change', () => {
+    activeCategory = categories.find((category) => category.id === categorySelectEl.value) || categories[0];
     renderGrid();
   });
 
-  renderTabs();
   renderGrid();
 
   return { refresh: renderGrid };
+}
+
+function refreshPaletteSwatches() {
+  document.querySelectorAll('.bead-swatch canvas[data-bead-id]').forEach((beadCanvas) => {
+    const type = findBeadType(beadCanvas.dataset.beadId);
+    if (type) renderBeadSwatch(beadCanvas, type);
+  });
+}
+
+function queueResponsiveRender() {
+  window.requestAnimationFrame(() => {
+    resizeCanvas();
+    refreshPaletteSwatches();
+  });
 }
 
 // ---------- 初始化 ----------
@@ -803,10 +789,8 @@ function initApp() {
   restorePersistedState();
 
   buildPalette(
-    document.getElementById('paletteTabs'),
+    document.getElementById('paletteCategorySelect'),
     document.getElementById('paletteGrid'),
-    document.getElementById('paletteSearch'),
-    document.getElementById('paletteEmpty'),
   );
 
   sizeButtonsEl.querySelectorAll('button').forEach((button) => {
@@ -815,6 +799,13 @@ function initApp() {
 
   document.getElementById('presetGrid').querySelectorAll('button').forEach((button) => {
     button.addEventListener('click', () => applyPreset(button.dataset.preset));
+  });
+
+  const mobilePresetSelect = document.getElementById('mobilePresetSelect');
+  mobilePresetSelect.addEventListener('change', () => {
+    if (!mobilePresetSelect.value) return;
+    applyPreset(mobilePresetSelect.value);
+    mobilePresetSelect.value = '';
   });
 
   document.getElementById('closeSelectionBtn').addEventListener('click', () => {
@@ -846,8 +837,9 @@ function initApp() {
   });
 
   setupCanvasPointerEvents();
-  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('resize', queueResponsiveRender);
   resizeCanvas();
+  queueResponsiveRender();
 }
 
 document.addEventListener('DOMContentLoaded', initApp);
