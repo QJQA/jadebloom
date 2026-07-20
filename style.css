@@ -542,8 +542,14 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
 }
 
 @media (min-width: 761px) {
+  .app-header {
+    height: 84px;
+    min-height: 84px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
   .app-main {
-    height: calc(100vh - 112px);
+    height: calc(100vh - 84px);
     min-height: 0;
     overflow: hidden;
   }
@@ -559,12 +565,49 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
     height: 100%;
     min-height: 0;
     display: grid;
-    grid-template-rows: minmax(300px,1fr) auto auto auto;
+    grid-template-rows: minmax(220px,1fr) auto auto;
   }
   .stage-wrap {
     height: 100%;
-    min-height: 300px;
+    min-height: 220px;
     aspect-ratio: auto;
+  }
+  .ring-readout {
+    position: absolute;
+    right: 18px;
+    bottom: 16px;
+    z-index: 3;
+    min-height: 0;
+    gap: 0;
+    padding: 8px 12px;
+    border: 1px solid rgba(255,255,255,.72);
+    border-radius: 99px;
+    background: rgba(255,253,249,.76);
+    box-shadow: 0 5px 16px rgba(62,45,39,.09);
+    backdrop-filter: blur(9px);
+    -webkit-backdrop-filter: blur(9px);
+  }
+  .ring-readout > div { display: flex; align-items: center; gap: 6px; }
+  .readout-label { display: inline; margin: 0; font-size: 8px; letter-spacing: .5px; }
+  .ring-info { max-width: none; font-size: 10px; line-height: 1; white-space: nowrap; }
+  .fit-disclaimer { display: none; }
+  .app-toolbar {
+    gap: 8px;
+    padding: 8px 14px 9px;
+  }
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+  }
+  .ghost-btn, .primary-btn {
+    min-height: 36px;
+    padding: 0 17px;
+    font-size: 11px;
+  }
+  .primary-btn {
+    min-width: 148px;
+    gap: 18px;
   }
   .workbench {
     height: 100%;
@@ -579,7 +622,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
 }
 
 @media (min-width: 761px) and (max-height: 850px) {
-  .stage-card { grid-template-rows: minmax(300px,1fr) auto auto; }
+  .stage-card { grid-template-rows: minmax(220px,1fr) auto; }
   .composition-bar { display: none; }
 }
 
@@ -777,7 +820,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, canvas:focus-vi
   .primary-btn { min-width: 116px; padding: 0 12px; }
 }
 
-@media (max-width: 350px), (max-height: 690px) {
+@media (max-width: 350px), (max-width: 760px) and (max-height: 690px) {
   .app-header { height: 64px; min-height: 64px; }
   .app-main {
     height: calc(100vh - 125px - env(safe-area-inset-bottom));
