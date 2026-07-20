@@ -282,6 +282,16 @@ function render() {
     return;
   }
 
+  if (window.matchMedia('(min-width: 761px)').matches) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(70,49,42,.065)';
+    ctx.filter = 'blur(13px)';
+    ctx.beginPath();
+    ctx.ellipse(cx + 8, cy + radiusPx * .45, radiusPx * 1.08, radiusPx * .52, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
   if (positions.length > 1) drawElastic(cx, cy, radiusPx);
 
   positions.forEach((p) => {
