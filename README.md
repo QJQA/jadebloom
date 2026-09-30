@@ -1,3 +1,5 @@
+> **已归档**：本项目已并入 [QJQA/crystal-bracelet-designer](https://github.com/QJQA/crystal-bracelet-designer) 的 `bracelet-designer/` 目录，线上地址 https://bracelet.bot100.store/ ，后续只在那里维护。
+
 # JADÉ BLOOM 水晶手串设计工坊
 
 这是 `crystal-bracelet-designer` 的本地视觉与交互升级版。当前版本只保存在本机，尚未提交或部署到线上。
